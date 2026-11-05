@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase/client";
 import Versiculo from "@/components/Versiculo";
 const inp="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-[#1765A5] focus:ring-2 focus:ring-blue-100";
 export default function Login(){
- const [modo,setModo]=useState<"entrar"|"cadastro">("entrar"); const [nome,setNome]=useState(""); const [email,setEmail]=useState(""); const [senha,setSenha]=useState(""); const [msg,setMsg]=useState(""); const [busy,setBusy]=useState(false);
+ const [modo,setModo]=useState<"entrar"|"cadastro">("entrar"); const [nome,setNome]=useState(""); const [email,setEmail]=useState(""); const [senha,setSenha]=useState(""); const [msg,setMsg]=useState(""); const [busy,setBusy]=useState(false); const [resetMode,setResetMode]=useState(false);
  useEffect(()=>{if(new URLSearchParams(location.search).get("recovery")==="1")setResetMode(true);const {data}=supabase().auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY")setResetMode(true)});return()=>data.subscription.unsubscribe()},[]);
  async function enviar(e:React.FormEvent){e.preventDefault();setBusy(true);setMsg("");
   if(resetMode){const {error}=await supabase().auth.updateUser({password:senha});if(error)setMsg("Não foi possível atualizar a senha.");else{setResetMode(false);setModo("entrar");setSenha("");setMsg("Senha atualizada. Entre com sua nova senha.")};setBusy(false);return;}
