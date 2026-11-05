@@ -1,0 +1,42 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase/client";
+import { hoje, useAtivos, inp, btn, btn2 } from "@/lib/util";
+const vazio = { cliente: "", service_id: "", data: hoje(), horario: "", professional_id: "", rua: "", numero: "", bairro: "", cidade: "", complemento: "", telefone: "" };
+const obrig = ["cliente", "service_id", "data", "horario", "professional_id", "rua", "numero", "bairro", "cidade"];
+export default function Form({ id }: { id?: string }) {
+  const r = useRouter(); const [f, setF] = useState<any>(vazio); const [erro, setErro] = useState(""); const [admin,setAdmin]=useState(false); const [meuProfissional,setMeuProfissional]=useState("");
+  const servs = useAtivos("services"), profs = useAtivos("professionals");
+  useEffect(() => { let live=true; supabase().auth.getUser().then(async({data})=>{if(!data.user)return;const {data:profile}=await supabase().from("profiles").select("role").eq("id",data.user.id).single();if(profile?.role==="admin"){if(live)setAdmin(true)}else{const {data:prof}=await supabase().from("professionals").select("id,nome").eq("user_id",data.user.id).maybeSingle();if(live&&prof){setMeuProfissional(prof.nome);setF((old:any)=>({...old,professional_id:prof.id}))}}}); if(id)supabase().from("appointments").select("*").eq("id",id).single().then((x)=>x.data&&live&&setF({...vazio,...x.data,horario:x.data.horario.slice(0,5),complemento:x.data.complemento||"",telefone:x.data.telefone||""})); return()=>{live=false}},[id]);
+  const s = (k: string) => (e: any) => setF({ ...f, [k]: e.target.value });
+  async function salvar(e: React.FormEvent) {
+    e.preventDefault(); setErro("");
+    if (obrig.some((k) => !String(f[k]).trim())) return setErro("Preencha todos os campos obrigatórios. Só o telefone é opcional.");
+    if (isNaN(new Date(f.data).getTime())) return setErro("Data inválida.");
+    const row = { cliente: f.cliente.trim(), service_id: f.service_id, professional_id: f.professional_id, data: f.data, horario: f.horario, rua: f.rua, numero: f.numero, bairro: f.bairro, cidade: f.cidade, complemento: f.complemento || null, telefone: f.telefone || null };
+    const q = id ? supabase().from("appointments").update(row).eq("id", id).select("id").single() : supabase().from("appointments").insert(row).select("id").single();
+    const { data, error } = await q;
+    if (error) return setErro(error.code === "23505" ? (error.message.includes("telefone") ? "Este telefone já está cadastrado para outro cliente. Confira o número informado." : "Conflito: este profissional já tem um atendimento nesta data e horário.") : "Erro ao salvar: " + error.message);
+    r.push(`/comprovante/${data!.id}`);
+  }
+  const L = (t: string, c: any) => <label className="block text-sm">{t}{c}</label>;
+  return (
+    <form onSubmit={salvar} className="grid gap-3 md:grid-cols-2">
+      <h1 className="text-2xl font-bold md:col-span-2">{id ? "Editar agendamento" : "Novo agendamento"}</h1>
+      {L("Nome completo do cliente *", <input className={inp} value={f.cliente} onChange={s("cliente")} />)}
+      {L("Serviço *", <select className={inp} value={f.service_id} onChange={s("service_id")}><option value="">Selecione</option>{servs.map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}</select>)}
+      {L("Data *", <input type="date" className={inp} value={f.data} onChange={s("data")} />)}
+      {L("Horário *", <input type="time" className={inp} value={f.horario} onChange={s("horario")} />)}
+      {admin?L("Profissional responsável *", <select className={inp} value={f.professional_id} onChange={s("professional_id")}><option value="">Selecione</option>{profs.map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}</select>):L("Profissional responsável", <div className={inp+" bg-slate-100"}>{meuProfissional||"Carregando perfil…"}</div>)}
+      {L("Telefone (opcional)", <input type="tel" className={inp} value={f.telefone} onChange={s("telefone")} />)}
+      {L("Rua *", <input className={inp} value={f.rua} onChange={s("rua")} />)}
+      {L("Número *", <input className={inp} value={f.numero} onChange={s("numero")} />)}
+      {L("Bairro *", <input className={inp} value={f.bairro} onChange={s("bairro")} />)}
+      {L("Cidade *", <input className={inp} value={f.cidade} onChange={s("cidade")} />)}
+      {L("Complemento", <input className={inp} value={f.complemento} onChange={s("complemento")} />)}
+      {erro && <p className="font-medium text-red-600 md:col-span-2">{erro}</p>}
+      <div className="flex gap-2 md:col-span-2"><button className={btn}>Salvar agendamento</button><button type="button" className={btn2} onClick={() => r.back()}>Cancelar</button></div>
+    </form>
+  );
+}
