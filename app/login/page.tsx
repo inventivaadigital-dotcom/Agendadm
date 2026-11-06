@@ -14,7 +14,6 @@ export default function Login() {
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
   const [resetMode, setResetMode] = useState(false);
-  const [aguardandoConfirmacao, setAguardandoConfirmacao] = useState(false);
 
   useEffect(() => {
     if (new URLSearchParams(location.search).get("recovery") === "1") setResetMode(true);
@@ -59,25 +58,8 @@ export default function Login() {
       });
       if (error) setMsg(error.message);
       else if (data.session) location.href = "/";
-      else {
-        setAguardandoConfirmacao(true);
-        setMsg("Cadastro iniciado. Confira sua caixa de entrada e a pasta de spam para confirmar seu e-mail.");
-      }
+      else setMsg("Cadastro criado, mas o acesso imediato está desativado no Supabase. É necessário desligar a confirmação de e-mail nas configurações do provedor Email.");
     }
-    setBusy(false);
-  }
-
-  async function reenviarConfirmacao() {
-    if (!email.trim()) {
-      setMsg("Informe o e-mail usado no cadastro.");
-      return;
-    }
-    setBusy(true);
-    setMsg("");
-    const { error } = await supabase().auth.resend({ type: "signup", email: email.trim(), options: { emailRedirectTo: APP_URL + "/" } });
-    setMsg(error
-      ? "Não foi possível reenviar agora. Confira se o endereço está correto e tente novamente."
-      : "Solicitação de reenvio realizada. Confira sua caixa de entrada e a pasta de spam.");
     setBusy(false);
   }
 
@@ -93,7 +75,6 @@ export default function Login() {
   function trocarModo(novoModo: "entrar" | "cadastro") {
     setModo(novoModo);
     setMsg("");
-    setAguardandoConfirmacao(false);
   }
 
   return (
@@ -139,11 +120,6 @@ export default function Login() {
           <button type="button" onClick={recuperar} className="w-full py-2 text-base font-medium text-[#1765A5] underline">Esqueci minha senha</button>
         )}
 
-        {!resetMode && modo === "cadastro" && aguardandoConfirmacao && (
-          <button type="button" disabled={busy} onClick={reenviarConfirmacao} className="w-full rounded-xl border border-[#1765A5] px-4 py-3 text-base font-semibold text-[#1765A5] disabled:opacity-60">
-            Reenviar e-mail de confirmação
-          </button>
-        )}
 
         {!resetMode && modo === "cadastro" && (
           <p className="text-center text-sm leading-relaxed text-slate-500">O cadastro cria acesso de profissional. Permissões administrativas não podem ser escolhidas nesta tela.</p>
