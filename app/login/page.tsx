@@ -52,13 +52,19 @@ export default function Login() {
         return;
       }
       const { data, error } = await supabase().auth.signUp({
-        email: email.trim(),
+        email: email.trim().toLowerCase(),
         password: senha,
         options: { data: { full_name: nome.trim() }, emailRedirectTo: APP_URL + "/" }
       });
-      if (error) setMsg(error.message);
-      else if (data.session) location.href = "/";
-      else setMsg("Cadastro criado, mas o acesso imediato está desativado no Supabase. É necessário desligar a confirmação de e-mail nas configurações do provedor Email.");
+      if (error) {
+        const texto = error.message.toLowerCase();
+        setMsg(texto.includes("already") || texto.includes("registered") || texto.includes("exists")
+          ? "Este e-mail já possui um cadastro. Volte para Entrar e acesse com sua senha."
+          : "Não foi possível concluir o cadastro. " + error.message);
+      } else if (data.user && data.user.identities?.length === 0) {
+        setMsg("Este e-mail já está cadastrado. Volte para Entrar e acesse com sua senha.");
+      } else if (data.session) location.href = "/";
+      else setMsg("Cadastro criado, mas o acesso imediato não foi liberado. Verifique a configuração de confirmação de e-mail no Supabase.");
     }
     setBusy(false);
   }
@@ -68,8 +74,17 @@ export default function Login() {
       setMsg("Digite seu e-mail para receber o link de recuperação.");
       return;
     }
-    const { error } = await supabase().auth.resetPasswordForEmail(email.trim(), { redirectTo: APP_URL + "/login?recovery=1" });
-    setMsg(error ? "Não foi possível enviar o link." : "Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.");
+    setBusy(true);
+    setMsg("");
+    const { error } = await supabase().auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: APP_URL + "/login?recovery=1"
+    });
+    if (error) {
+      setMsg("Não foi possível solicitar a recuperação: " + error.message);
+    } else {
+      setMsg("Solicitação enviada ao serviço de e-mail. Confira a caixa de entrada e o spam. Se a mensagem não chegar, será necessário configurar um SMTP de envio no Supabase.");
+    }
+    setBusy(false);
   }
 
   function trocarModo(novoModo: "entrar" | "cadastro") {
