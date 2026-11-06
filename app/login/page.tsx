@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase/client";
 import Versiculo from "@/components/Versiculo";
 
 const inp = "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-4 text-base outline-none transition focus:border-[#1765A5] focus:ring-2 focus:ring-blue-100";
+const APP_URL = "https://agendamentos-app-inventivaadigital-7607.vercel.app";
 
 export default function Login() {
   const [modo, setModo] = useState<"entrar" | "cadastro">("entrar");
@@ -54,7 +55,7 @@ export default function Login() {
       const { data, error } = await supabase().auth.signUp({
         email: email.trim(),
         password: senha,
-        options: { data: { full_name: nome.trim() }, emailRedirectTo: location.origin + "/" }
+        options: { data: { full_name: nome.trim() }, emailRedirectTo: APP_URL + "/" }
       });
       if (error) setMsg(error.message);
       else if (data.session) location.href = "/";
@@ -73,7 +74,7 @@ export default function Login() {
     }
     setBusy(true);
     setMsg("");
-    const { error } = await supabase().auth.resend({ type: "signup", email: email.trim(), options: { emailRedirectTo: location.origin + "/" } });
+    const { error } = await supabase().auth.resend({ type: "signup", email: email.trim(), options: { emailRedirectTo: APP_URL + "/" } });
     setMsg(error
       ? "Não foi possível reenviar agora. Confira se o endereço está correto e tente novamente."
       : "Solicitação de reenvio realizada. Confira sua caixa de entrada e a pasta de spam.");
@@ -85,7 +86,7 @@ export default function Login() {
       setMsg("Digite seu e-mail para receber o link de recuperação.");
       return;
     }
-    const { error } = await supabase().auth.resetPasswordForEmail(email.trim(), { redirectTo: location.origin + "/login?recovery=1" });
+    const { error } = await supabase().auth.resetPasswordForEmail(email.trim(), { redirectTo: APP_URL + "/login?recovery=1" });
     setMsg(error ? "Não foi possível enviar o link." : "Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.");
   }
 
