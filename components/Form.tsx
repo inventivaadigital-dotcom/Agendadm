@@ -6,9 +6,9 @@ import { hoje, useAtivos, inp, btn, btn2 } from "@/lib/util";
 const vazio = { cliente: "", service_id: "", data: hoje(), horario: "", professional_id: "", rua: "", numero: "", bairro: "", cidade: "", complemento: "", telefone: "" };
 const obrig = ["cliente", "service_id", "data", "horario", "professional_id", "rua", "numero", "bairro", "cidade"];
 export default function Form({ id }: { id?: string }) {
-  const r = useRouter(); const [f, setF] = useState<any>(vazio); const [erro, setErro] = useState(""); const [admin,setAdmin]=useState(false); const [meuProfissional,setMeuProfissional]=useState("");
+  const r = useRouter(); const [f, setF] = useState<any>(vazio); const [erro, setErro] = useState("");
   const servs = useAtivos("services"), profs = useAtivos("professionals");
-  useEffect(() => { let live=true; supabase().auth.getUser().then(async({data})=>{if(!data.user)return;const {data:profile}=await supabase().from("profiles").select("role").eq("id",data.user.id).single();if(profile?.role==="admin"){if(live)setAdmin(true)}else{const {data:prof}=await supabase().from("professionals").select("id,nome").eq("user_id",data.user.id).maybeSingle();if(live&&prof){setMeuProfissional(prof.nome);setF((old:any)=>({...old,professional_id:prof.id}))}}}); if(id)supabase().from("appointments").select("*").eq("id",id).single().then((x)=>x.data&&live&&setF({...vazio,...x.data,horario:x.data.horario.slice(0,5),complemento:x.data.complemento||"",telefone:x.data.telefone||""})); return()=>{live=false}},[id]);
+  useEffect(() => { const prof = new URLSearchParams(location.search).get("prof"); if(prof)setF((old:any)=>({...old,professional_id:prof})); if(id)supabase().from("appointments").select("*").eq("id",id).single().then((x)=>x.data&&setF({...vazio,...x.data,horario:x.data.horario.slice(0,5),complemento:x.data.complemento||"",telefone:x.data.telefone||""})); },[id]);
   const s = (k: string) => (e: any) => setF({ ...f, [k]: e.target.value });
   async function salvar(e: React.FormEvent) {
     e.preventDefault(); setErro("");
@@ -28,7 +28,7 @@ export default function Form({ id }: { id?: string }) {
       {L("Serviço *", <select className={inp} value={f.service_id} onChange={s("service_id")}><option value="">Selecione</option>{servs.map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}</select>)}
       {L("Data *", <input type="date" className={inp} value={f.data} onChange={s("data")} />)}
       {L("Horário *", <input type="time" className={inp} value={f.horario} onChange={s("horario")} />)}
-      {admin?L("Profissional responsável *", <select className={inp} value={f.professional_id} onChange={s("professional_id")}><option value="">Selecione</option>{profs.map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}</select>):L("Profissional responsável", <div className={inp+" bg-slate-100"}>{meuProfissional||"Carregando perfil…"}</div>)}
+      {L("Profissional responsável *", <select className={inp} value={f.professional_id} onChange={s("professional_id")}><option value="">Selecione</option>{profs.map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}</select>)}
       {L("Telefone (opcional)", <input type="tel" className={inp} value={f.telefone} onChange={s("telefone")} />)}
       {L("Rua *", <input className={inp} value={f.rua} onChange={s("rua")} />)}
       {L("Número *", <input className={inp} value={f.numero} onChange={s("numero")} />)}
