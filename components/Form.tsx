@@ -8,7 +8,8 @@ const obrig = ["cliente", "data", "horario", "professional_id", "rua", "numero",
 export default function Form({ id }: { id?: string }) {
   const r = useRouter(); const [f, setF] = useState<any>(vazio); const [erro, setErro] = useState(""); const [servicoTexto, setServicoTexto] = useState(""); const [rascunhoCarregado, setRascunhoCarregado] = useState(false); const chaveRascunho = `marcondes-agendamento-rascunho-${id || "novo"}`;
   const servs = useAtivos("services"), profs = useAtivos("professionals");
-  useEffect(() => { let ativo = true; (async () => { let base:any = {...vazio}; if(id){ const x=await supabase().from("appointments").select("*").eq("id",id).single(); if(x.data) base={...vazio,...x.data,horario:x.data.horario.slice(0,5),complemento:x.data.complemento||"",telefone:x.data.telefone||""}; } let salvo:any=null; try { const raw=localStorage.getItem(chaveRascunho); if(raw) salvo=JSON.parse(raw); } catch {} if(!ativo)return; if(salvo?.f){base={...base,...salvo.f};setServicoTexto(salvo.servicoTexto||"");} else {const prof=new URLSearchParams(location.search).get("prof");if(prof&&!id)base.professional_id=prof;} setF(base);setRascunhoCarregado(true); })(); return()=>{ativo=false}; },[id]);\n  useEffect(() => { if(!rascunhoCarregado)return; try { localStorage.setItem(chaveRascunho,JSON.stringify({f,servicoTexto,atualizadoEm:new Date().toISOString()})); } catch {} },[f,servicoTexto,rascunhoCarregado,chaveRascunho]);
+  useEffect(() => { let ativo = true; (async () => { let base:any = {...vazio}; if(id){ const x=await supabase().from("appointments").select("*").eq("id",id).single(); if(x.data) base={...vazio,...x.data,horario:x.data.horario.slice(0,5),complemento:x.data.complemento||"",telefone:x.data.telefone||""}; } let salvo:any=null; try { const raw=localStorage.getItem(chaveRascunho); if(raw) salvo=JSON.parse(raw); } catch {} if(!ativo)return; if(salvo?.f){base={...base,...salvo.f};setServicoTexto(salvo.servicoTexto||"");} else {const prof=new URLSearchParams(location.search).get("prof");if(prof&&!id)base.professional_id=prof;} setF(base);setRascunhoCarregado(true); })(); return()=>{ativo=false}; },[id]);
+  useEffect(() => { if(!rascunhoCarregado)return; try { localStorage.setItem(chaveRascunho,JSON.stringify({f,servicoTexto,atualizadoEm:new Date().toISOString()})); } catch {} },[f,servicoTexto,rascunhoCarregado,chaveRascunho]);
   useEffect(() => { if(f.service_id && servs.length) { const found=servs.find((x:any)=>x.id===f.service_id); if(found)setServicoTexto(found.nome); } },[f.service_id,servs]);
   const escolherServico = (valor:string) => { setServicoTexto(valor); };
   const s = (k: string) => (e: any) => setF((old:any) => ({ ...old, [k]: e.target.value }));
@@ -32,7 +33,8 @@ export default function Form({ id }: { id?: string }) {
     const q = id ? supabase().from("appointments").update(row).eq("id", id).select("id").single() : supabase().from("appointments").insert(row).select("id").single();
     const { data, error } = await q;
     if (error) return setErro(error.code === "23505" ? (error.message.includes("telefone") ? "Este telefone já está cadastrado para outro cliente. Confira o número informado." : "Conflito: este profissional já tem um atendimento nesta data e horário.") : "Erro ao salvar: " + error.message);
-    try { localStorage.removeItem(chaveRascunho); } catch {}\n    r.push(`/comprovante/${data!.id}`);
+    try { localStorage.removeItem(chaveRascunho); } catch {}
+    r.push(`/comprovante/${data!.id}`);
   }
   const L = (t: string, c: any) => <label className="block text-sm">{t}{c}</label>;
   return (
