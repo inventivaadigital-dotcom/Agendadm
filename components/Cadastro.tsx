@@ -7,7 +7,7 @@ export default function Cadastro({ t, titulo, desc }: { t: "professionals" | "se
  const [rows,setRows]=useState<any[]>([]);const[nome,setNome]=useState("");const[telefone,setTelefone]=useState("");const[d,setD]=useState("");const[msg,setMsg]=useState("");
  const load=()=>supabase().from(t).select("*").order("nome").then(x=>setRows(x.data||[]));
  useEffect(()=>{load()},[]);
- async function add(){if(nome.trim().length<2)return setMsg("Informe o nome.");if(t==="professionals"&&!telefone.trim())return setMsg("Informe o telefone do profissional.");const payload=t==="professionals"?{nome:nome.trim(),telefone:telefone.trim()||null}:{nome:nome.trim(),...(desc?{descricao:d||null}:{})};const{error}=await supabase().from(t).insert(payload);setMsg(error?"Não foi possível cadastrar: "+error.message:"Cadastro realizado.");setNome("");setTelefone("");setD("");load();}
+ async function add(){if(nome.trim().length<2)return setMsg("Informe o nome.");if(t==="professionals"&&!telefone.trim())return setMsg("Informe o telefone do profissional.");const payload:any=t==="professionals"?{nome:nome.trim(),telefone:telefone.trim()||null}:{nome:nome.trim(),...(desc?{descricao:d||null}:{})};const{error}=await supabase().from(t).insert(payload);setMsg(error?"Não foi possível cadastrar: "+error.message:"Cadastro realizado.");setNome("");setTelefone("");setD("");load();}
  async function up(id:string,v:any){await supabase().from(t).update(v).eq("id",id);load();}
  async function del(id:string){if(!confirm("Excluir este cadastro?"))return;const{error}=await supabase().from(t).delete().eq("id",id);setMsg(error?"Possui histórico de agendamentos e não pode ser excluído. Desative-o.":"");load();}
  return <div className="space-y-4"><h1 className="text-2xl font-bold">{titulo}</h1>
