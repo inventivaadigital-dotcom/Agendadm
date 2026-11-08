@@ -15,7 +15,7 @@ export default function Form({ id }: { id?: string }) {
   const s = (k: string) => (e: any) => setF((old:any) => ({ ...old, [k]: e.target.value }));
   async function salvar(e: React.FormEvent) {
     e.preventDefault(); setErro("");
-    if (obrig.some((k) => !String(f[k]).trim()) || !servicoTexto.trim()) return setErro("Preencha todos os campos obrigatórios. Só o telefone é opcional.");
+    if (obrig.some((k) => !String(f[k]).trim()) || !servicoTexto.trim() || (!id && !String(f.cpf_cnpj || "").trim())) return setErro("Preencha todos os campos obrigatórios, incluindo CPF/CNPJ. Telefone e observações são opcionais.");
     if (isNaN(new Date(f.data).getTime())) return setErro("Data inválida.");
     const conflito = await supabase().from("appointments").select("id").eq("professional_id", f.professional_id).eq("data", f.data).eq("horario", f.horario).neq("id", id || "00000000-0000-0000-0000-000000000000").limit(1);
     if (conflito.error) return setErro("Não foi possível verificar a disponibilidade do horário: " + conflito.error.message);
@@ -49,7 +49,7 @@ export default function Form({ id }: { id?: string }) {
       {L("Horário *", <input type="time" className={inp} value={f.horario} onChange={s("horario")} />)}
       {L("Profissional responsável *", <select className={inp} value={f.professional_id} onChange={s("professional_id")}><option value="">Selecione</option>{profs.map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}</select>)}
       {L("Telefone (opcional)", <input type="tel" className={inp} value={f.telefone} onChange={s("telefone")} />)}
-      {L("CPF/CNPJ (opcional)", <input inputMode="numeric" className={inp} value={f.cpf_cnpj} onChange={s("cpf_cnpj")} placeholder="Informe CPF ou CNPJ" />)}
+      {L("CPF/CNPJ *", <input inputMode="numeric" className={inp} value={f.cpf_cnpj} onChange={s("cpf_cnpj")} placeholder="Informe CPF ou CNPJ" />)}
       {L("Rua *", <input className={inp} value={f.rua} onChange={s("rua")} />)}
       {L("Número *", <input className={inp} value={f.numero} onChange={s("numero")} />)}
       {L("Bairro *", <input className={inp} value={f.bairro} onChange={s("bairro")} />)}
