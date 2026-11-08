@@ -4,26 +4,21 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import { inp, btn, btn2 } from "@/lib/util";
 export default function Cadastro({ t, titulo, desc }: { t: "professionals" | "services"; titulo: string; desc?: boolean }) {
-  const [rows, setRows] = useState<any[]>([]); const [nome, setNome] = useState(""); const [d, setD] = useState(""); const [msg, setMsg] = useState("");
-  const load = () => supabase().from(t).select("*").order("nome").then((x) => setRows(x.data || []));
-  useEffect(() => { load(); }, []);
-  async function add() { if (!nome.trim()) return setMsg("Informe o nome."); const { error } = await supabase().from(t).insert(desc ? { nome: nome.trim(), descricao: d || null } : { nome: nome.trim() }); setMsg(error ? "Erro: " + error.message : ""); setNome(""); setD(""); load(); }
-  async function up(id: string, v: any) { await supabase().from(t).update(v).eq("id", id); load(); }
-  async function del(id: string) { if (!confirm("Excluir este cadastro?")) return; const { error } = await supabase().from(t).delete().eq("id", id); setMsg(error ? "Possui histórico de agendamentos e não pode ser excluído. Desative-o." : ""); load(); }
-  return (
-    <div className="space-y-3">
-      <h1 className="text-2xl font-bold">{titulo}</h1>
-      <div className="flex flex-wrap gap-2"><input className={inp + " !w-60"} placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} />
-        {desc && <input className={inp + " !w-60"} placeholder="Descrição (opcional)" value={d} onChange={(e) => setD(e.target.value)} />}<button className={btn} onClick={add}>Adicionar</button></div>
-      {msg && <p className="text-red-600">{msg}</p>}
-      {rows.map((r) => (
-        <div key={r.id} className="flex flex-wrap items-center gap-2 rounded-2xl border p-3">
-          <div className="flex-1"><b className={r.ativo ? "" : "text-gray-400 line-through"}>{r.nome}</b>{r.descricao && <p className="text-sm text-gray-500">{r.descricao}</p>}</div>
-          <button className={btn2} onClick={() => { const n = prompt("Novo nome:", r.nome); if (n?.trim()) up(r.id, { nome: n.trim() }); }}>Editar</button>
-          <button className={btn2} onClick={() => up(r.id, { ativo: !r.ativo })}>{r.ativo ? "Desativar" : "Ativar"}</button>
-          {t === "professionals" && <Link className={btn2} href={`/agendamentos?prof=${r.id}`}>Agendamentos</Link>}
-          <button className={btn2} onClick={() => del(r.id)}>Excluir</button>
-        </div>))}
-    </div>
-  );
+ const [rows,setRows]=useState<any[]>([]);const[nome,setNome]=useState("");const[telefone,setTelefone]=useState("");const[d,setD]=useState("");const[msg,setMsg]=useState("");
+ const load=()=>supabase().from(t).select("*").order("nome").then(x=>setRows(x.data||[]));
+ useEffect(()=>{load()},[]);
+ async function add(){if(nome.trim().length<2)return setMsg("Informe o nome.");const payload=t==="professionals"?{nome:nome.trim(),telefone:telefone.trim()||null}:{nome:nome.trim(),...(desc?{descricao:d||null}:{})};const{error}=await supabase().from(t).insert(payload);setMsg(error?"Não foi possível cadastrar: "+error.message:"Cadastro realizado.");setNome("");setTelefone("");setD("");load();}
+ async function up(id:string,v:any){await supabase().from(t).update(v).eq("id",id);load();}
+ async function del(id:string){if(!confirm("Excluir este cadastro?"))return;const{error}=await supabase().from(t).delete().eq("id",id);setMsg(error?"Possui histórico de agendamentos e não pode ser excluído. Desative-o.":"");load();}
+ return <div className="space-y-4"><h1 className="text-2xl font-bold">{titulo}</h1>
+ <div className="grid gap-2 rounded-2xl bg-slate-50 p-3 sm:grid-cols-2">
+ <input className={inp} placeholder="Nome completo" value={nome} onChange={e=>setNome(e.target.value)}/>
+ {t==="professionals"&&<input className={inp} placeholder="Telefone" inputMode="tel" value={telefone} onChange={e=>setTelefone(e.target.value)}/>}
+ {desc&&<input className={inp} placeholder="Descrição (opcional)" value={d} onChange={e=>setD(e.target.value)}/>}
+ <button className={btn} onClick={add}>+ Adicionar</button></div>
+ {msg&&<p className="text-sm text-slate-600">{msg}</p>}
+ <div className="grid gap-3 sm:grid-cols-2">{rows.map(r=><div key={r.id} className="rounded-2xl border border-slate-200 p-4 shadow-sm">
+ <b className={r.ativo?"text-[#123B60]":"text-gray-400 line-through"}>{r.nome}</b>{r.telefone&&<p className="mt-1 text-sm text-slate-500">{r.telefone}</p>}{r.descricao&&<p className="text-sm text-gray-500">{r.descricao}</p>}
+ <div className="mt-3 flex flex-wrap gap-2"><button className={btn2} onClick={()=>{const n=prompt("Novo nome:",r.nome);if(n?.trim())up(r.id,{nome:n.trim()})}}>Editar</button><button className={btn2} onClick={()=>up(r.id,{ativo:!r.ativo})}>{r.ativo?"Desativar":"Ativar"}</button>{t==="professionals"&&<Link className={btn2} href={`/agendamentos?prof=${r.id}`}>Agendamentos</Link>}<button className={btn2} onClick={()=>del(r.id)}>Excluir</button></div>
+ </div>)}</div></div>;
 }
