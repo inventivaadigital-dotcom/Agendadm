@@ -60,8 +60,8 @@ export default function Comp({ params }: { params: { id: string } }) {
         pdf.text(titulo + ":", margem, y);
         pdf.setFont("helvetica", "normal");
         pdf.setTextColor(45, 55, 65);
-        const linhas = pdf.splitTextToSize(String(valor), largura - margem * 2 - 38);
-        pdf.text(linhas, margem + 38, y);
+        const linhas = pdf.splitTextToSize(String(valor), largura - margem * 2 - 55);
+        pdf.text(linhas, margem + 55, y);
         y += Math.max(8, linhas.length * 5 + 3);
         if (y > 255) {
           pdf.addPage();
@@ -91,7 +91,7 @@ export default function Comp({ params }: { params: { id: string } }) {
       const mensagem = "Pedimos a gentileza de que, caso ocorra algum imprevisto, nos avise com antecedência para que possamos reorganizar nossa agenda. Agradecemos pela preferência! Dedetizadora Marcondes.";
       pdf.text(pdf.splitTextToSize(mensagem, largura - margem * 2 - 12), margem + 6, y + 17);
 
-      const nomeArquivo = "Comprovante-" + String(a.cliente || "Agendamento").normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").replace(/[^a-zA-Z0-9-]/g, "-") + ".pdf";
+      const nomeArquivo = "Comprovante-" + String(a.cliente || "Agendamento").replace(/[^a-zA-Z0-9-]/g, "-") + ".pdf";
       const blob = pdf.output("blob");
       const arquivo = new File([blob], nomeArquivo, { type: "application/pdf" });
       const texto = "Olá! Segue o comprovante do seu agendamento com a Dedetizadora Marcondes.";
