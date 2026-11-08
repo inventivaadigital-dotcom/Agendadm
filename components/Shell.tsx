@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Versiculo from "./Versiculo";
 const nav=[ ["/","Início"],["/agenda","Agenda mensal"],["/agendamentos","Agendamentos"] ];
 export default function Shell({children}:{children:React.ReactNode}){
- const path=usePathname();const[menu,setMenu]=useState(false);
+ const path=usePathname();const[menu,setMenu]=useState(false);const[splash,setSplash]=useState(true);useEffect(()=>{const t=window.setTimeout(()=>setSplash(false),1800);return()=>window.clearTimeout(t)},[]);
  return <><div className="mx-auto max-w-6xl px-3 py-4 sm:px-5">
  <header className="no-print mb-4 flex flex-wrap items-center gap-3 rounded-3xl border border-white/70 bg-white/95 p-3 shadow-lg">
  <img src="/logo.jpg" alt="Dedetizadora Marcondes" className="h-14 w-14 rounded-full object-cover"/>
@@ -15,5 +15,5 @@ export default function Shell({children}:{children:React.ReactNode}){
  </div>}</div></header>
  <nav className="no-print mb-4 flex gap-2 overflow-x-auto pb-1">{nav.map(([href,label])=><Link key={href} href={href} className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${path===href?"bg-[#1765A5] text-white":"bg-white/95 text-[#123B60]"}`}>{label}</Link>)}</nav>
  <main className="min-h-[65vh] rounded-3xl border border-white/70 bg-white/95 p-4 shadow-lg sm:p-6">{children}</main><Versiculo/>
- </div></>;
+ </div>{splash&&<div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#123B60] px-8 text-center text-white"><img src="/logo.jpg?v=5" alt="Dedetizadora Marcondes" className="mb-6 h-40 w-40 rounded-full border-4 border-[#F28C28] object-cover shadow-2xl"/><h1 className="text-2xl font-extrabold tracking-wide">AGENDAMENTOS</h1><p className="mt-5 max-w-md text-sm leading-relaxed text-white/90">“Tudo o que fizerem, façam de todo o coração, como para o Senhor, e não para os homens...”</p><p className="mt-2 text-xs font-semibold tracking-widest text-[#F28C28]">COLOSSENSES 3:23</p></div>}</>;
 }
