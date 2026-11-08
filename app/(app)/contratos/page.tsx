@@ -6,7 +6,7 @@ import {Q,br,hh,end,inp,btn2,hoje} from "@/lib/util";
 export default function ContratosAtendidos(){
  const [mes,setMes]=useState(hoje().slice(0,7)); const [rows,setRows]=useState<any[]>([]); const [loading,setLoading]=useState(true); const [erro,setErro]=useState("");
  useEffect(()=>{let ativo=true;setLoading(true);setErro("");const [ano,mm]=mes.split("-").map(Number);const inicio=mes+"-01";const fim=mes+"-"+String(new Date(ano,mm,0).getDate()).padStart(2,"0");
- supabase().from("appointments").select(Q).gte("data",inicio).lte("data",fim).ilike("services.nome","manutenção mensal").order("data",{ascending:false}).order("horario")
+ supabase().from("appointments").select("*, services!inner(nome), professionals(nome, telefone, cargo)").gte("data",inicio).lte("data",fim).ilike("services.nome","manutenção mensal").order("data",{ascending:false}).order("horario")
  .then(({data,error})=>{if(!ativo)return;if(error){setErro("Não foi possível carregar os contratos atendidos: "+error.message);setRows([])}else setRows(data||[]);setLoading(false)});
  return()=>{ativo=false};},[mes]);
  return <div className="space-y-4">
