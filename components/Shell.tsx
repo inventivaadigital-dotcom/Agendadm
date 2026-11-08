@@ -11,7 +11,6 @@ export default function Shell({children}:{children:React.ReactNode}){
  <header className="no-print mb-4 flex flex-wrap items-center gap-3 rounded-3xl border border-white/70 bg-white/95 p-3 shadow-lg">
  <img src="/logo.jpg" alt="Dedetizadora Marcondes" className="h-14 w-14 rounded-full object-cover"/>
  <div className="min-w-0 flex-1"><p className="font-extrabold tracking-wide text-[#123B60]">DEDETIZADORA MARCONDES</p><p className="text-sm text-slate-500">Agendamentos · Equipe</p></div>
- <Link href="/agendamentos/novo" className="rounded-xl bg-[#F28C28] px-4 py-2.5 text-sm font-bold text-white">+ Novo agendamento</Link>
  <div className="relative"><button aria-label="Abrir menu" onClick={()=>setMenu(!menu)} className="rounded-xl border px-3 py-2.5 text-xl text-[#123B60]">⋮</button>{menu&&<div className="absolute right-0 z-20 mt-2 w-56 rounded-2xl border bg-white p-2 shadow-xl">
  <Link onClick={()=>setMenu(false)} href="/profissionais" className="block rounded-xl px-3 py-3 font-semibold hover:bg-slate-50">Profissionais</Link><Link onClick={()=>setMenu(false)} href="/servicos" className="block rounded-xl px-3 py-3 font-semibold hover:bg-slate-50">Serviços</Link><Link onClick={()=>setMenu(false)} href="/configuracoes" className="block rounded-xl px-3 py-3 font-semibold hover:bg-slate-50">Configurações</Link>
  </div>}</div></header>
