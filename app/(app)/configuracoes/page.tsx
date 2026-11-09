@@ -60,12 +60,12 @@ export default function Config(){
     userVisibleOnly:true,
     applicationServerKey:chavePublicaBytes(publicKey) as BufferSource
    });
-   const {error}=await supabase().from("push_subscriptions").upsert({
+   const {error}=await supabase().from("push_subscriptions").insert({
     endpoint:subscription.endpoint,
     subscription:subscription.toJSON(),
     updated_at:new Date().toISOString()
-   },{onConflict:"endpoint"});
-   if(error)throw error;
+   });
+   if(error && error.code!=="23505")throw error;
    setPushStatus("Notificações ativadas neste aparelho. Os avisos serão enviados 2 horas antes dos agendamentos.");
   }catch(error:any){
    setPushStatus("Não foi possível ativar as notificações: "+(error?.message||"tente novamente."));
